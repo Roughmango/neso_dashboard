@@ -1,6 +1,6 @@
-import sqlite3
 import requests
 from datetime import datetime, timezone
+from database import get_connection
 
 
 class Transform:
@@ -16,7 +16,7 @@ class Transform:
             print(f"National API request failed: {status_code, fuel_status_code}")
             return
 
-        with sqlite3.connect(self.DB_PATH) as connection:
+        with get_connection() as connection:
             cursor = connection.cursor()
 
             for reading in data:
@@ -29,13 +29,14 @@ class Transform:
                 # Insert national reading
                 cursor.execute(
                     """
-                    INSERT OR IGNORE INTO national_readings (
+                    INSERT INTO national_readings (
                         reading_id,
                         forecast_intensity,
                         actual_intensity,
                         intensity_index
                     )
-                    VALUES (?, ?, ?, ?)
+                    VALUES (%s, %s, %s, %s)
+                    ON CONFLICT DO NOTHING
                     """,
                     (
                         reading_id,
@@ -55,7 +56,7 @@ class Transform:
             print(f"Regional API request failed: {status_code}")
             return
 
-        with sqlite3.connect(self.DB_PATH) as connection:
+        with get_connection() as connection:
             cursor = connection.cursor()
 
             for period in data:
@@ -71,14 +72,15 @@ class Transform:
                     # Insert regional reading
                     cursor.execute(
                         """
-                        INSERT OR IGNORE INTO regional_readings (
+                        INSERT INTO regional_readings (
                             reading_id,
                             region_id,
                             forecast_intensity,
                             actual_intensity,
                             intensity_index
                         )
-                        VALUES (?, ?, ?, ?, ?)
+                        VALUES (%s, %s, %s, %s, %s)
+                        ON CONFLICT DO NOTHING
                         """,
                         (
                             reading_id,
@@ -94,12 +96,13 @@ class Transform:
         for fuel in fuel_data:
             cursor.execute(
                 """
-                INSERT OR IGNORE INTO national_generation_mix (
+                INSERT INTO national_generation_mix (
                     reading_id,
                     fuel_type,
                     percentage
                 )
-                VALUES (?, ?, ?)
+                VALUES (%s, %s, %s)
+                ON CONFLICT DO NOTHING
                 """,
                 (
                     reading_id,
@@ -112,13 +115,14 @@ class Transform:
         for fuel in fuel_data:
             cursor.execute(
                 """
-                INSERT OR IGNORE INTO regional_generation_mix (
+                INSERT INTO regional_generation_mix (
                     reading_id,
                     region_id,
                     fuel_type,
                     percentage
                 )
-                VALUES (?, ?, ?, ?)
+                VALUES (%s, %s, %s, %s)
+                ON CONFLICT DO NOTHING
                 """,
                 (
                     reading_id,
@@ -139,12 +143,13 @@ class Transform:
         ).isoformat()
         cursor.execute(
             """
-            INSERT OR IGNORE INTO period_id (
+            INSERT INTO period_id (
                 period_from,
                 period_to,
                 fetched_at
             )
-            VALUES (?, ?, ?)
+            VALUES (%s, %s, %s)
+            ON CONFLICT (period_from, period_to, fetched_at) DO NOTHING
             """,
             (
                 reading["from"],
@@ -158,8 +163,8 @@ class Transform:
             """
             SELECT id
             FROM period_id
-            WHERE period_from = ?
-            AND period_to = ?
+            WHERE period_from = %s
+            AND period_to = %s
             """,
             (
                 reading["from"],
