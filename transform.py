@@ -173,7 +173,3 @@ class Transform:
         )
 
         return cursor.fetchone()[0]
-
-transform = Transform()
-transform.transformNational()
-transform.transformRegional()
