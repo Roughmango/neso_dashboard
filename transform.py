@@ -2,22 +2,16 @@ import sqlite3
 import requests
 from datetime import datetime, timezone
 
-from fetch import Fetch
-
 
 class Transform:
     def __init__(self):
         self.DB_PATH = "carbon_intensity.db"
 
     def transformNational(self):
-        fetcher = Fetch()
-
-        data, status_code = fetcher.fetch(
-            "https://api.carbonintensity.org.uk/intensity"
-        )
-        fuel_data, fuel_status_code = fetcher.fetch(
-            "https://api.carbonintensity.org.uk/generation"
-        )
+        response = requests.get("https://api.carbonintensity.org.uk/intensity")
+        data, status_code = response.json()["data"], response.status_code
+        data_response = requests.get("https://api.carbonintensity.org.uk/generation")
+        fuel_data, fuel_status_code = data_response.json()["data"], data_response.status_code
         if status_code and fuel_status_code != 200:
             print(f"National API request failed: {status_code, fuel_status_code}")
             return
@@ -54,11 +48,8 @@ class Transform:
 
 
     def transformRegional(self):
-        fetcher = Fetch()
-
-        data, status_code = fetcher.fetch(
-            "https://api.carbonintensity.org.uk/regional"
-        )
+        response = requests.get("https://api.carbonintensity.org.uk/regional")
+        data, status_code = response.json()["data"], response.status_code
 
         if status_code != 200:
             print(f"Regional API request failed: {status_code}")
