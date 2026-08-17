@@ -1,10 +1,8 @@
-import sqlite3
+import os
+import psycopg
 
-connection = sqlite3.connect("carbon_intensity.db")
 
-with open("schema.sql", "r") as file:
-    schema = file.read()
+def get_connection():
+    database_url = os.environ["DATABASE_URL"]
 
-connection.executescript(schema)
-connection.commit()
-connection.close()
+    return psycopg.connect(database_url)
