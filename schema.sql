@@ -1,16 +1,21 @@
 CREATE TABLE period_id (
-    id INTEGER PRIMARY KEY,
+    id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     period_from TEXT NOT NULL,
     period_to TEXT NOT NULL,
-    fetched_at TEXT NOT NULL,
+    fetched_at TIMESTAMPTZ NOT NULL,
+
     UNIQUE(period_from, period_to, fetched_at)
 );
+
+
 CREATE TABLE regions (
     region_id INTEGER PRIMARY KEY,
     region_name TEXT NOT NULL
 );
+
+
 CREATE TABLE national_readings (
-    id INTEGER PRIMARY KEY,
+    id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     reading_id INTEGER NOT NULL,
     forecast_intensity INTEGER,
     actual_intensity INTEGER,
@@ -20,8 +25,9 @@ CREATE TABLE national_readings (
     UNIQUE(reading_id)
 );
 
+
 CREATE TABLE regional_readings (
-    id INTEGER PRIMARY KEY,
+    id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     reading_id INTEGER NOT NULL,
     region_id INTEGER NOT NULL,
     forecast_intensity INTEGER,
@@ -30,29 +36,36 @@ CREATE TABLE regional_readings (
 
     FOREIGN KEY (reading_id) REFERENCES period_id(id),
     FOREIGN KEY (region_id) REFERENCES regions(region_id),
+
     UNIQUE(reading_id, region_id)
 );
 
+
 CREATE TABLE national_generation_mix (
-    id INTEGER PRIMARY KEY,
+    id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     reading_id INTEGER NOT NULL,
     fuel_type TEXT NOT NULL,
     percentage REAL,
 
     FOREIGN KEY (reading_id) REFERENCES period_id(id),
+
     UNIQUE(reading_id, fuel_type, percentage)
 );
 
+
 CREATE TABLE regional_generation_mix (
-    id INTEGER PRIMARY KEY,
+    id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     reading_id INTEGER NOT NULL,
     region_id INTEGER NOT NULL,
     fuel_type TEXT NOT NULL,
     percentage REAL,
 
     FOREIGN KEY (reading_id) REFERENCES period_id(id),
+    FOREIGN KEY (region_id) REFERENCES regions(region_id),
+
     UNIQUE(reading_id, region_id, fuel_type, percentage)
 );
+
 
 INSERT INTO regions (region_id, region_name)
 VALUES
@@ -73,4 +86,5 @@ VALUES
     (15, 'England'),
     (16, 'Scotland'),
     (17, 'Wales'),
-    (18, 'GB');
+    (18, 'GB')
+ON CONFLICT (region_id) DO NOTHING;
