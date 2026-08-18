@@ -1,5 +1,13 @@
 from database import get_connection
 class Validate:
+    def validateConnection(self):
+        try:
+            connection = get_connection()
+            connection.close()
+            print("OK: Database connection successful.")
+        except Exception as e:
+            print(f"ERROR: Database connection failed: {e}")
+
     def validateNational(self):
         connection = get_connection()
         with connection.cursor() as cursor:
@@ -103,12 +111,74 @@ class Validate:
 
         connection.close()
 
+    def validateGenerationMix(self):
+        connection = get_connection()
+
+        with connection.cursor() as cursor:
+
+            # Validate national generation mix
+            cursor.execute("""
+                SELECT
+                    reading_id,
+                    SUM(percentage) AS total_percentage
+                FROM national_generation_mix
+                GROUP BY reading_id
+                HAVING ABS(SUM(percentage) - 100) > 1;
+            """)
+
+            invalid_national = cursor.fetchall()
+
+            if invalid_national:
+                print("WARNING: Invalid national generation mix totals:")
+
+                for reading_id, total in invalid_national:
+                    print(
+                        f"  Reading {reading_id}: "
+                        f"{total}%"
+                    )
+            else:
+                print(
+                    "OK: All national generation mixes "
+                    "sum to approximately 100%."
+                )
+
+            # Validate regional generation mix
+            cursor.execute("""
+                SELECT
+                    reading_id,
+                    region_id,
+                    SUM(percentage) AS total_percentage
+                FROM regional_generation_mix
+                GROUP BY reading_id, region_id
+                HAVING ABS(SUM(percentage) - 100) > 1;
+            """)
+
+            invalid_regional = cursor.fetchall()
+
+            if invalid_regional:
+                print("WARNING: Invalid regional generation mix totals:")
+
+                for reading_id, region_id, total in invalid_regional:
+                    print(
+                        f"  Reading {reading_id}, "
+                        f"Region {region_id}: "
+                        f"{total}%"
+                    )
+            else:
+                print(
+                    "OK: All regional generation mixes "
+                    "sum to approximately 100%."
+                )
+
+        connection.close()
+
     def validate(self):
         print("Running data validation...")
-
+        self.validateConnection()
         self.validateNational()
         self.validateRegional()
         self.validatePeriods()
+        self.validateGenerationMix()
 
         print("Data validation complete.")
 
