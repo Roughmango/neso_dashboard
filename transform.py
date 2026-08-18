@@ -4,18 +4,30 @@ from database import get_connection
 
 
 class Transform:
+    """
+    This class is used to collect data from the api and then transform it so that it can be added to the database
+    in the correct area
+    """
     def __init__(self):
         self.DB_PATH = "carbon_intensity.db"
 
     def transformNational(self):
+        """
+        This function is used to transform all data that is related to the national readings, so that it can be added
+        to the database in the correct table
+        :return:
+        """
+        # gets the initial data response of its carbon value
         response = requests.get("https://api.carbonintensity.org.uk/intensity")
         data, status_code = response.json()["data"], response.status_code
+        # gets the initial data response of the make up of the carbon generation and the fuel used
         data_response = requests.get("https://api.carbonintensity.org.uk/generation")
         fuel_data, fuel_status_code = data_response.json()["data"], data_response.status_code
+        # checks that both requests have not encountered an error
         if status_code and fuel_status_code != 200:
             print(f"National API request failed: {status_code, fuel_status_code}")
             return
-
+        # connects to the database
         with get_connection() as connection:
             cursor = connection.cursor()
 
@@ -49,21 +61,27 @@ class Transform:
 
 
     def transformRegional(self):
+        """
+            This function is used to transform all data that is related to the regional readings, so that it can be added
+            to the database in the correct table
+        :return:
+        """
+        #gets the regional data
         response = requests.get("https://api.carbonintensity.org.uk/regional")
         data, status_code = response.json()["data"], response.status_code
-
+        # ensures a error was not encountered getting the api data
         if status_code != 200:
             print(f"Regional API request failed: {status_code}")
             return
-
+        #sets up the connection with the database
         with get_connection() as connection:
             cursor = connection.cursor()
-
+            # goes over every region in the data
             for period in data:
 
                 # Create the time-period record
                 self.insertPeriodID(cursor, period)
-
+                # gets the id for the time period
                 reading_id = self.getReadingID(cursor, period)
 
                 # Insert each region
@@ -93,7 +111,16 @@ class Transform:
                     self.transformRegionalMix(cursor, reading_id, region["generationmix"],region["regionid"])
 
     def transformNationalMix(self,cursor, reading_id, fuel_data):
+        """
+        This function is used to transform all data that is related to the national mix of fuel so that it can be input
+        into its correct table
+        :param cursor: the connection with the database
+        :param reading_id: the id of its time period
+        :param fuel_data: the fuel data it is adding
+        :return:
+        """
         for fuel in fuel_data:
+            # for each type of fuel adds it to the database for that national reading
             cursor.execute(
                 """
                 INSERT INTO national_generation_mix (
@@ -112,7 +139,17 @@ class Transform:
             )
 
     def transformRegionalMix(self, cursor, reading_id, fuel_data, region_id):
+        """
+                This function is used to transform all data that is related to the regional mix of fuel so that it can be input
+                into its correct table
+                :param cursor: the connection with the database
+                :param reading_id: the id of its time period
+                :param fuel_data: the fuel data it is adding
+                :param region_id: the id of the region this data belongs to
+                :return:
+                """
         for fuel in fuel_data:
+            # goes other every type of fuel and adds it to the database
             cursor.execute(
                 """
                 INSERT INTO regional_generation_mix (
@@ -133,6 +170,15 @@ class Transform:
             )
 
     def insertPeriodID(self, cursor, reading):
+        """
+        This function is used to insert the period ID into the database, the period id is the id used for each
+        time period that is being recorded
+        :param cursor: the connection with the database
+        :param reading: the time period
+        :return:
+        """
+        #records when the data was fetched at
+        # this rounds it to the nearest 5 minute
         now = datetime.now(timezone.utc)
         minutes = (now.minute // 5) * 5
 
@@ -159,6 +205,12 @@ class Transform:
         )
 
     def getReadingID(self, cursor, reading):
+        """
+        This function is used to get the reading id from the database
+        :param cursor: the connection with the database
+        :param reading: the data it is reading from
+        :return:
+        """
         cursor.execute(
             """
             SELECT id
