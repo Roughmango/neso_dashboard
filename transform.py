@@ -33,10 +33,8 @@ class Transform:
 
             for reading in data:
                 # Create the time-period record if it doesn't already exist
-                self.insertPeriodID(cursor, reading)
-
                 # Get the ID for this time period
-                reading_id = self.getReadingID(cursor, reading)
+                reading_id = self.insertPeriodID(cursor, reading)
 
                 # Insert national reading
                 cursor.execute(
@@ -82,7 +80,7 @@ class Transform:
                 # Create the time-period record
                 self.insertPeriodID(cursor, period)
                 # gets the id for the time period
-                reading_id = self.getReadingID(cursor, period)
+                reading_id = self.insertPeriodID(cursor, period)
 
                 # Insert each region
                 for region in period["regions"]:
@@ -196,6 +194,7 @@ class Transform:
             )
             VALUES (%s, %s, %s)
             ON CONFLICT (period_from, period_to, fetched_at) DO NOTHING
+            RETURNING id
             """,
             (
                 reading["from"],
@@ -203,25 +202,19 @@ class Transform:
                 fetched_at
             )
         )
+        row = cursor.fetchone()
+        if row is not None:
+            return row[0]
 
-    def getReadingID(self, cursor, reading):
-        """
-        This function is used to get the reading id from the database
-        :param cursor: the connection with the database
-        :param reading: the data it is reading from
-        :return:
-        """
+            # Conflict happened (this exact period+fetch already exists) —
+            # look it up explicitly, filtered on all three columns so it's unambiguous.
         cursor.execute(
             """
-            SELECT id
-            FROM period_id
-            WHERE period_from = %s
-            AND period_to = %s
+            SELECT id FROM period_id
+            WHERE period_from = %s AND period_to = %s AND fetched_at = %s
             """,
-            (
-                reading["from"],
-                reading["to"]
+            (reading["from"], reading["to"], fetched_at)
             )
-        )
+
 
         return cursor.fetchone()[0]
