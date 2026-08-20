@@ -5,6 +5,11 @@ st.title("Generation mix")
 
 
 data = get_national_generation()
+reading = data.iloc[0]
+st.write(
+        f"Period: {reading['period_from']} → "
+        f"{reading['period_to']}"
+    )
 latest = data[data["period_from"] == data["period_from"].max()]
 fig = national_mix_chart(latest)
 st.plotly_chart(fig, use_container_width=True)
