@@ -66,3 +66,19 @@ def get_latest_regional_readings():
     """
 
     return pd.read_sql(query, engine)
+
+def get_national_generation():
+    engine = get_engine()
+    query = """
+    SELECT
+    p.period_from,
+    p.period_to,
+    ngm.fuel_type,
+    ngm.percentage
+    FROM national_generation_mix ngm
+    
+    JOIN period_id p
+        ON ngm.reading_id = p.id
+    ORDER BY p.period_from DESC;
+    """
+    return pd.read_sql(query, engine)

@@ -12,3 +12,14 @@ def regional_intensity_chart(data):
     )
 
     return fig
+
+def national_mix_chart(data):
+    fig = px.bar(
+        data,
+        x="percentage",
+        y="fuel_type",
+        orientation="h",
+        title="National Generation mix"
+    )
+
+    return fig
