@@ -13,3 +13,9 @@ for this project.
 
 Database choice: For the database, supabase is being used as it is allows for free online database that the data can easily be stored to.
 As such postgresql has to be used as it is compatible with the website.
+
+First iteration of XGBoost model: For my first attempt at predicting the intensity I decided to use XGBoost as it has
+readily available libraries so will be easy to implement within my project. For the first attempt specifically I just
+wanted to focus on using how past intensities had been predicted and what they actually were, before moving on to using
+generation mix in later models, as this will also allow me to predict regional intensities as well seeing as they don't
+actual intensities. 
