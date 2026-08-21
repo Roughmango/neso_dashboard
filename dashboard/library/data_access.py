@@ -82,3 +82,30 @@ def get_national_generation():
     ORDER BY p.period_from DESC;
     """
     return pd.read_sql(query, engine)
+
+def get_regional_generation(region):
+    engine = get_engine()
+    query = """
+        SELECT
+        p.period_from,
+        p.period_to,
+        rgm.fuel_type,
+        rgm.percentage
+        FROM regional_generation_mix rgm
+        JOIN period_id p
+            ON rgm.reading_id = p.id
+        WHERE rgm.region_id = %(region)s
+        ORDER BY p.period_from DESC;
+        """
+    return pd.read_sql(query, engine, params={"region": region})
+
+def get_region_name(region):
+    engine = get_engine()
+    query = """
+    SELECT
+    region_name
+    FROM regions
+    WHERE region_id = %(region)s
+    """
+    data = pd.read_sql(query, engine, params={"region": region})
+    return data.iloc[0]["region_name"]
