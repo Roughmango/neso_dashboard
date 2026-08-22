@@ -109,3 +109,23 @@ def get_region_name(region):
     """
     data = pd.read_sql(query, engine, params={"region": region})
     return data.iloc[0]["region_name"]
+
+def get_national_readings():
+    engine = get_engine()
+    query = """
+    SELECT
+    p.period_from,
+    p.period_to,
+    nr.reading_id,
+    nr.forecast_intensity,
+    nr.actual_intensity,
+    ngm.fuel_type,
+    ngm.percentage
+    FROM national_readings nr
+    JOIN period_id p
+        ON nr.reading_id = p.id
+    JOIN national_generation_mix ngm
+        ON nr.reading_id = ngm.reading_id
+    ORDER BY p.period_from;
+    """
+    return pd.read_sql(query, engine)
