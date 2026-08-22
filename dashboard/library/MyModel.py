@@ -15,7 +15,6 @@ class MyModel:
 
         features = [
             "forecast_intensity",
-            "forecast_error",
 
             "hour",
             "minute",
@@ -66,7 +65,7 @@ class MyModel:
             learning_rate=0.03,
             subsample=0.8,
             colsample_bytree=0.8,
-            objective="reg:squarederror",
+            objective="reg:absoluteerror",
             random_state=42
         )
 
@@ -162,8 +161,4 @@ class MyModel:
                 + data["biomass"]
         )
 
-        data["forecast_error"] = (
-                data["actual_intensity"]
-                - data["forecast_intensity"]
-        )
         return data
