@@ -129,3 +129,29 @@ def get_national_readings():
     ORDER BY p.period_from;
     """
     return pd.read_sql(query, engine)
+
+def get_regional_readings():
+
+    engine = get_engine()
+
+    query = """
+    SELECT
+        p.period_from,
+        p.period_to,
+        r.region_name,
+        rr.region_id,
+        rr.forecast_intensity,
+        rr.actual_intensity,
+        rr.intensity_index
+    FROM regional_readings rr
+
+    JOIN period_id p
+        ON rr.reading_id = p.id
+
+    JOIN regions r
+        ON rr.region_id = r.region_id
+
+    ORDER BY rr.region_id;
+    """
+
+    return pd.read_sql(query, engine)
