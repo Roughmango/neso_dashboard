@@ -8,12 +8,14 @@ class MyModel:
 
         data = self.getFeatures(data)
 
-        # Target
-        data["target"] = data["actual_intensity"]
+        # Target, instead of coming up with my own prediction, the model learns how off the api prediction is and learns how to best correct it.
+        data["target"] = (
+                data["actual_intensity"]
+                - data["forecast_intensity"]
+        )
 
-        # -------------------------
+
         # Features
-        # -------------------------
 
         features = [
             "forecast_intensity",
@@ -98,13 +100,21 @@ class MyModel:
         ).sort_values(ascending=False)
 
         print(importance)
-        predictions = model.predict(X_test)
+        predicted_error = model.predict(X_test)
+
+        predictions = (
+                test["forecast_intensity"].values
+                + predicted_error
+        )
+
         results = pd.DataFrame({
-            "actual_intensity": y_test.values,
+            "actual_intensity": test["actual_intensity"].values,
             "forecast_intensity": predictions.round(0),
             "api_prediction": test["forecast_intensity"].values,
             "period_from": test["period_from"].values
         })
+
+
         return results
 
 
