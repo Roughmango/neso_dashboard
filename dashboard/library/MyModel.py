@@ -27,9 +27,18 @@ class MyModel:
             "lag_3",
             "lag_4",
             "lag_48",
+            "error_lag_1",
+            "error_lag_2",
+            "error_lag_3",
+            "error_lag_48",
 
             "rolling_3",
             "rolling_6",
+            "error_rolling_3",
+            "error_rolling_6",
+            "error_rolling_48",
+
+
             "renewable",
             "fossil",
             "low_carbon"
@@ -39,6 +48,14 @@ class MyModel:
         model_data = data.dropna(
             subset=features + ["target"]
         ).copy()
+        # i noticed there are instances in the data where the predicted data is wildly off the acutal value, so we do not want to train it on those values
+        # this makes it so that if there is a difference of 50 or more between the actual and predicted then it does not train it on that
+        model_data = model_data[
+            (
+                    model_data["forecast_intensity"]
+                    - model_data["actual_intensity"]
+            ).abs() < 50
+            ].copy()
 
         # -------------------------
         # Train/test split
@@ -76,7 +93,7 @@ class MyModel:
         predictions = model.predict(X_test)
         results = pd.DataFrame({
             "actual_intensity": y_test.values,
-            "forecast_intensity": predictions
+            "forecast_intensity": predictions.round(0)
         })
 
 
@@ -140,25 +157,57 @@ class MyModel:
             .rolling(6)
             .mean()
         )
-
+        #fuel types has to be shifted as although when training actual and fuel percentages is known,
+        # in actuality when predicting for a time in the future the fuel percentage is not known
         data["renewable"] = (
-                data["biomass"]
-                + data["hydro"]
-                + data["solar"]
-                + data["wind"]
+                data["biomass"].shift(1)
+                + data["hydro"].shift(1)
+                + data["solar"].shift(1)
+                + data["wind"].shift(1)
         )
 
         data["fossil"] = (
-                data["coal"]
-                + data["gas"]
+                data["coal"].shift(1)
+                + data["gas"].shift(1)
         )
 
         data["low_carbon"] = (
-                data["nuclear"]
-                + data["hydro"]
-                + data["solar"]
-                + data["wind"]
-                + data["biomass"]
+                data["nuclear"].shift(1)
+                + data["hydro"].shift(1)
+                + data["solar"].shift(1)
+                + data["wind"].shift(1)
+                + data["biomass"].shift(1)
+        )
+
+        data["forecast_error"] = (
+                data["actual_intensity"]
+                - data["forecast_intensity"]
+        )
+
+        data["error_lag_1"] = data["forecast_error"].shift(1)
+        data["error_lag_2"] = data["forecast_error"].shift(2)
+        data["error_lag_3"] = data["forecast_error"].shift(3)
+        data["error_lag_48"] = data["forecast_error"].shift(48)
+
+        data["error_rolling_3"] = (
+            data["forecast_error"]
+            .shift(1)
+            .rolling(3)
+            .mean()
+        )
+
+        data["error_rolling_6"] = (
+            data["forecast_error"]
+            .shift(1)
+            .rolling(6)
+            .mean()
+        )
+
+        data["error_rolling_48"] = (
+            data["forecast_error"]
+            .shift(1)
+            .rolling(48)
+            .mean()
         )
 
         return data
