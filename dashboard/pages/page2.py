@@ -2,7 +2,7 @@ import streamlit as st
 from library.mae_calculator import *
 from library.data_access import get_national_readings
 from library.MyModel import *
-
+from library.charts import *
 
 st.title("Forecast Accuracy")
 st.write(
@@ -17,6 +17,10 @@ st.write(calculate_yesterday_mae(data))
 
 model = MyModel()
 predictions = model.model(data)
-st.write("Predictions:")
-st.write(predictions.head())
+st.write("How accurately does my model predict?")
 st.write(calculate_forecast_accuracy(predictions))
+
+st.plotly_chart(
+    actual_vs_predicted(predictions),
+    use_container_width=True
+)
