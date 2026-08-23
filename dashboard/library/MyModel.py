@@ -95,8 +95,6 @@ class MyModel:
             "actual_intensity": y_test.values,
             "forecast_intensity": predictions.round(0)
         })
-
-
         return results
 
 
