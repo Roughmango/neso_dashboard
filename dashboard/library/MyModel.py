@@ -3,7 +3,9 @@ import pandas as pd
 class MyModel:
     def model(self, data):
         data = data.copy()
+
         data = self.getFuelTable(data)
+
         data = self.getFeatures(data)
 
         # Target
@@ -22,7 +24,10 @@ class MyModel:
             "is_weekend",
             "time_of_day",
 
+            #"intensity_change",
+
             "lag_1",
+            "forecast_vs_lag",
             "lag_2",
             "lag_3",
             "lag_4",
@@ -57,9 +62,8 @@ class MyModel:
             ).abs() < 50
             ].copy()
 
-        # -------------------------
         # Train/test split
-        # -------------------------
+
 
         split = int(len(model_data) * 0.8)
 
@@ -72,16 +76,15 @@ class MyModel:
         X_test = test[features]
         y_test = test["target"]
 
-        # -------------------------
         # Model
-        # -------------------------
+
 
         model = XGBRegressor(
-            n_estimators=500,
+            n_estimators=800,
             max_depth=5,
             learning_rate=0.03,
-            subsample=0.8,
-            colsample_bytree=0.8,
+            subsample=0.7,
+            colsample_bytree=0.7,
             objective="reg:absoluteerror",
             random_state=42
         )
@@ -89,11 +92,18 @@ class MyModel:
         model.fit(
             X_train,
             y_train)
+        importance = pd.Series(
+            model.feature_importances_,
+            index=features
+        ).sort_values(ascending=False)
 
+        print(importance)
         predictions = model.predict(X_test)
         results = pd.DataFrame({
             "actual_intensity": y_test.values,
-            "forecast_intensity": predictions.round(0)
+            "forecast_intensity": predictions.round(0),
+            "api_prediction": test["forecast_intensity"].values,
+            "period_from": test["period_from"].values
         })
         return results
 
@@ -134,12 +144,20 @@ class MyModel:
         data["target"] = data["actual_intensity"]
 
         data["lag_1"] = data["actual_intensity"].shift(1)
+        data["forecast_vs_lag"] = (
+                data["forecast_intensity"]
+                - data["lag_1"]
+        )
         data["lag_2"] = data["actual_intensity"].shift(2)
         data["lag_3"] = data["actual_intensity"].shift(3)
         data["lag_4"] = data["actual_intensity"].shift(4)
-
         # Same time yesterday
         data["lag_48"] = data["actual_intensity"].shift(48)
+
+        data["intensity_change"] = (
+                data["actual_intensity"].shift(1)
+                - data["actual_intensity"].shift(2)
+        )
 
         # Rolling averages
         data["rolling_3"] = (
