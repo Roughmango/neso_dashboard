@@ -3,20 +3,22 @@ import pandas as pd
 class MyModel:
     def model(self, data):
         data = data.copy()
-
         data = self.getFuelTable(data)
 
         data = self.getFeatures(data)
-
+        print("Total rows:", len(data))
+        print("Missing intensity_index:", data["intensity_index"].isna().sum())
         # Target
         data["target"] = data["actual_intensity"]
+
 
 
         # Features
 
         features = [
             "forecast_intensity",
-
+            "intensity_index",
+            
             "hour",
             "minute",
             "day_of_week",
@@ -48,16 +50,12 @@ class MyModel:
             "low_carbon"
         ]
 
-        # Remove rows with missing values
-        model_data = data.dropna(
-            subset=features + ["target"]
-        ).copy()
         # i noticed there are instances in the data where the predicted data is wildly off the acutal value, so we do not want to train it on those values
         # this makes it so that if there is a difference of 50 or more between the actual and predicted then it does not train it on that
-        model_data = model_data[
+        model_data = data[
             (
-                    model_data["forecast_intensity"]
-                    - model_data["actual_intensity"]
+                    data["forecast_intensity"]
+                    - data["actual_intensity"]
             ).abs() < 50
             ].copy()
 
@@ -85,7 +83,8 @@ class MyModel:
             subsample=0.7,
             colsample_bytree=0.7,
             objective="reg:absoluteerror",
-            random_state=42
+            random_state=42,
+            enable_categorical=True
         )
 
         model.fit(
@@ -123,7 +122,8 @@ class MyModel:
                 "period_from",
                 "period_to",
                 "forecast_intensity",
-                "actual_intensity"
+                "actual_intensity",
+                "intensity_index"
             ]
         ].drop_duplicates()
         finalData = readings.merge(
@@ -225,6 +225,19 @@ class MyModel:
             .shift(1)
             .rolling(48)
             .mean()
+        )
+        #this maps the intensity index so it can be used as it is in categories
+        mapping = {
+            "very_low": 0,
+            "low": 1,
+            "medium": 2,
+            "high": 3,
+            "very_high": 4
+        }
+
+        data["intensity_index"] = (
+            data["intensity_index"]
+            .map(mapping)
         )
 
         return data
