@@ -1,5 +1,5 @@
 import streamlit as st
-from botocore import regions
+
 from library.data_access import get_national_generation, get_regional_generation, get_region_name
 from library.charts import national_mix_chart, regional_mix_chart
 st.title("Generation mix")
