@@ -119,6 +119,7 @@ def get_national_readings():
     nr.reading_id,
     nr.forecast_intensity,
     nr.actual_intensity,
+    nr.intensity_index,
     ngm.fuel_type,
     ngm.percentage
     FROM national_readings nr
