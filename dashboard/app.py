@@ -2,6 +2,10 @@ import streamlit as st
 
 pages = [
     st.Page(
+        "pages/page0.py",
+        title="Introduction"
+    ),
+    st.Page(
         "pages/page1.py",
         title="Live Overview"
     ),
