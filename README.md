@@ -22,6 +22,7 @@ The Smart Advisor Page: This page predicts the carbon intensity for each region 
 
 Machine learning:
 The project uses XGBoost for carbon-intensity prediction.
+My Model has an MAE of 7.881 and a RMSE of 11.65 vs the API model with an MAE of 9.222 and RMSE of 18.524
 
 The model uses features including:
 
