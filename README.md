@@ -86,6 +86,6 @@ Create my own purpose built model to improve the carbon intensity forecast
 Create my own web page to display my findings and model.
 Turn the model into something that can be used to find out predictions for the future.
 
-This project was an exercise in building a realistic end to end pipeline. It had scheduled data 
+This project was an exercise in building a realistic end to end pipeline. It has a automated scheduled data 
 collection from a live public API,an append-only storage design that 
 preserves forecast revisions over time, a machine learning model created specifically to improve predictions and a deployed, interactive front end — rather than a one-off analysis of a static dataset.
