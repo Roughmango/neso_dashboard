@@ -3,7 +3,6 @@ import pandas as pd
 
 def get_greenest_windows(predictions, windows_per_region=3):
     predictions = predictions.copy()
-    print(predictions.columns.tolist())
     predictions = predictions.sort_values(
         ["region_name", "prediction"]
     )
