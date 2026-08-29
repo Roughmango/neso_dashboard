@@ -19,3 +19,8 @@ readily available libraries so will be easy to implement within my project. For 
 wanted to focus on using how past intensities had been predicted and what they actually were, before moving on to using
 generation mix in later models, as this will also allow me to predict regional intensities as well seeing as they don't
 actual intensities. 
+
+Final model: This uses a wide variety of features such as the intensity mix, time, the generation mix, lags and other features.
+All of this is used to create a model that has a better mae then that of the api prediction model.
+
+Website Host: Streamlit was used as it is a free cloud based website hoster with github integration.
