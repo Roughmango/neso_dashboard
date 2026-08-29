@@ -2,8 +2,9 @@ Website URL: https://addashboard-n8qf338l3bguvofoyy9chq.streamlit.app/
 
 NESO Carbon Intensity Dashboard
 
-A streamlit dashboard that has various features related to the UK electricity carbon intensity, generation mix and its accuracy. The dashboard uses data from the NESO carbon intensity API and provides both live visualization
+A streamlit dashboard that has a persistent, automated, automated,end to end data system around a live API. It has various features related to the UK electricity carbon intensity, generation mix and its accuracy. The dashboard uses data from the NESO carbon intensity API and provides both live visualization
 and machine learning based predictions to help identify periods and regions that will have the lowest carbon intensity in a future period.
+Automated scheduled ingestion of live API data using GitHub Actions makes sure data is always up to date.
 
 Features:
 The Live Overview Page: The purpose of this page is to show you the current most recent data that has been taken from the API on carbon intensity
