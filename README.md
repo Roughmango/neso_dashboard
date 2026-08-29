@@ -7,6 +7,8 @@ and machine learning based predictions to help identify periods and regions that
 Automated scheduled ingestion of live API data using GitHub Actions makes sure data is always up to date.
 
 Features:
+POSTGRESQL database with a size 6000 records when readme last updated with more automatically added every half an hour.
+
 The Live Overview Page: The purpose of this page is to show you the current most recent data that has been taken from the API on carbon intensity
 It shows the forecast, actual and intensity index of the National carbon intensity, as well as for each region
 
@@ -43,7 +45,8 @@ Data Pipeline
 The project follows a general pipeline of:
 
 NESO API
-   ↓
+
+↓
 Data collection
    ↓
 Transformation / validation
