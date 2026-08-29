@@ -9,3 +9,4 @@ plotly
 sqlalchemy
 psycopg
 python-dotenv
+psycopg2
