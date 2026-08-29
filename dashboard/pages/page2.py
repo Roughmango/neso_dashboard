@@ -22,5 +22,5 @@ st.write(calculate_forecast_accuracy(predictions))
 
 st.plotly_chart(
     actual_vs_predicted(predictions),
-    use_container_width=True
+    width="stretch"
 )

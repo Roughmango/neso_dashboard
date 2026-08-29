@@ -13,7 +13,7 @@ st.write(
     )
 latest = data[data["period_from"] == data["period_from"].max()]
 fig = national_mix_chart(latest)
-st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(fig, width="stretch")
 
 columns = st.columns(3)
 
@@ -30,4 +30,4 @@ for i, region in enumerate(range(1, 98)):
     )
 
     with columns[i % 3]:
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
